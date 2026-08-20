@@ -159,130 +159,126 @@ function renderRepositoryList() {
       const badge = document.createElement("span"); badge.className = "repository-badge"; badge.textContent = "private"; title.append(badge);
     }
     const description = document.createElement("small");
-    description.textContent = repository.description?.trim() || (repository.private ? "éå…¬é–‹ãƒªãƒã‚¸ãƒˆàêˆˆˆ¹ak:e¢øàê¸àçxà®8àâ8àêˆŠNÂˆ^˜\[™
-]K\ØÜš\[ÛŠNÈ][K˜\[™
-ÚXÚØ›Ş^
-NÈ[[Y[Ë›\İ˜\[™
-][JNÂˆBŸB‚˜\Ş[˜È[˜İ[ÛˆØY™\ÜÚ]ÜšY\Ê
-HÂˆYˆ
-\İ]K˜]][XØ]Y
-HÈ[[Y[Ëœ™\ÜÚ]ÜSY\ÜØYÙK^ÛÛ[H‘Ú]X¸àn8àëxà¬8à©8àìøàfxà¢øàj9. :)©øà¤¹cå¹o¥øàiøàcxào¸àfxà ˆÈ™]\›ÈBˆ[[Y[Ëœ™[ØY™\ØX›YHYNÂˆ[[Y[Ëœ™\ÜÚ]ÜSY\ÜØYÙK^ÛÛ[H‘Ú]X¸àbøà¢ycå¹o¥ù.+x )ˆÂˆHÂˆÛÛœİ]HH]ØZ]™\]Y\İœÛÛŠ‹Ø\KÜ™\ÜÚ]ÜšY\ÈŠNÂˆİ]K˜]˜Z[X›HH\œ˜^Kš\Ğ\œ˜^J]Kœ™\ÜÚ]ÜšY\ÊHÈ]Kœ™\ÜÚ]ÜšY\Èˆ×NÂˆİ]K›ØYYHYNÂˆ[[Y[Ëœ™\ÜÚ]ÜSY\ÜØYÙK^ÛÛ[H	Üİ]K˜]˜Z[X›K›[™İy.í¸à¤¹cå¹o¥øàeøào¸àeøàgøà ˜Âˆ™[™\”™\ÜÚ]ÜS\İ
+    description.textContent = repository.description?.trim() || (repository.private ? "éå…¬é–‹ãƒªãƒã‚¸ãƒˆãƒª" : "å…¬é–‹ãƒªãƒã‚¸ãƒˆãƒª");
+    text.append(title, description); item.append(checkbox, text); elements.list.append(item);
+  }
+}
 
-NÂˆHØ]Ú
-\œ›ÜŠHÂˆ[[Y[Ëœ™\ÜÚ]ÜSY\ÜØYÙK^ÛÛ[H\œ›Ü‹›Y\ÜØYÙNÂˆYˆ
-\œ›Ü‹˜ÛÙHOOH˜]][XØ][Û—Ü™\]Z\™YŠH]ØZ]ØYÙ\ÜÚ[ÛŠ
-NÂˆHš[˜[HÈ[[Y[Ëœ™[ØY™\ØX›YH\İ]K˜]][XØ]YÈBŸB‚™[˜İ[ÛˆÜ[”™\ÜÚ]ÜQX[ÙÊ
-HÂˆİ]K™˜Y˜]›Üš]\ÈH™]ÈÙ]
-İ]K™˜]›Üš]\ÊNÂˆ[[Y[ËœÙX\˜Ú˜[YHHˆÈ[[Y[Ëœ™\ÜÚ]ÜSY\ÜØYÙK^ÛÛ[HˆÂˆ™[™\”™\ÜÚ]ÜS\İ
+async function loadRepositories() {
+  if (!state.authenticated) { elements.repositoryMessage.textContent = "GitHubã¸ãƒ­ã‚°ã‚¤ãƒ³ã™ã‚‹ã¨ä¸€è¦§ã‚’å–å¾—ã§ãã¾ã™ã€‚"; return; }
+  elements.reload.disabled = true;
+  elements.repositoryMessage.textContent = "GitHubã‹ã‚‰å–å¾—ä¸­â€¦";
+  try {
+    const data = await requestJson("/api/repositories");
+    state.available = Array.isArray(data.repositories) ? data.repositories : [];
+    state.loaded = true;
+    elements.repositoryMessage.textContent = `${state.available.length}ä»¶ã‚’å–å¾—ã—ã¾ã—ãŸã€‚`;
+    renderRepositoryList();
+  } catch (error) {
+    elements.repositoryMessage.textContent = error.message;
+    if (error.code === "authentication_required") await loadSession();
+  } finally { elements.reload.disabled = !state.authenticated; }
+}
 
-NÂˆYˆ
-\[Ùˆ[[Y[Ë™X[ÙËœÚİÓ[Ù[OOH™[˜İ[ÛˆŠH[[Y[Ë™X[ÙËœÚİÓ[Ù[
+function openRepositoryDialog() {
+  state.draftFavorites = new Set(state.favorites);
+  elements.search.value = ""; elements.repositoryMessage.textContent = "";
+  renderRepositoryList();
+  if (typeof elements.dialog.showModal === "function") elements.dialog.showModal();
+  else elements.dialog.setAttribute("open", "");
+  if (state.authenticated && !state.loaded) void loadRepositories();
+}
 
-NÂˆ[ÙH[[Y[Ë™X[ÙËœÙ]]šX]J›Ü[ˆ‹ˆŠNÂˆYˆ
-İ]K˜]][XØ]Y	‰ˆ\İ]K›ØYY
-H›ÚYØY™\ÜÚ]ÜšY\Ê
-NÂŸB‚™[˜İ[ÛˆYX[X[™\ÜÚ]ÜJ
-HÂˆÛÛœİ™\ÜÚ]ÜHH›Ü›X[^™T™\ÜÚ]ÜR[œ]
-[[Y[Ë›X[X[˜[YJNÂˆYˆ
-\™\ÜÚ]ÜJHÈ[[Y[Ëœ™\ÜÚ]ÜSY\ÜØYÙK^ÛÛ[H›İÛ™\‹Ü™\ÜÚ]ÜH9oh¹o#øàiùaiyb¦øàeøài¸àcøàh8àexàa8à ˆÈ™]\›ÈBˆİ]K™˜Y˜]›Üš]\Ë˜Y
-™\ÜÚ]ÜJNÂˆ[[Y[Ë›X[X[˜[YHHˆÂˆ[[Y[Ëœ™\ÜÚ]ÜSY\ÜØYÙK^ÛÛ[H	Ü™\ÜÚ]Ü_H8à¤º/ïyb¨9`&z(ç8àjøàeøào¸àeøàgøà ˜Âˆ™[™\”™\ÜÚ]ÜS\İ
+function addManualRepository() {
+  const repository = normalizeRepositoryInput(elements.manual.value);
+  if (!repository) { elements.repositoryMessage.textContent = "owner/repository å½¢å¼ã§å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚"; return; }
+  state.draftFavorites.add(repository);
+  elements.manual.value = "";
+  elements.repositoryMessage.textContent = `${repository} ã‚’è¿½åŠ å€™è£œã«ã—ã¾ã—ãŸã€‚`;
+  renderRepositoryList();
+}
 
-NÂŸB‚™[˜İ[Ûˆ™Yš[
+function prefill() {
+  const url = new URL(location.href);
+  const draft = buildSharedDraft(url.searchParams);
+  if (draft.title && !elements.title.value) elements.title.value = draft.title;
+  if (draft.body && !elements.body.value) elements.body.value = draft.body;
+  if (url.searchParams.get("auth") === "ok") showToast("GitHubã«ãƒ­ã‚°ã‚¤ãƒ³ã—ã¾ã—ãŸ");
+  else if (url.searchParams.get("auth") === "denied") setStatus("GitHubãƒ­ã‚°ã‚¤ãƒ³ãŒã‚­ãƒ£ãƒ³ã‚»ãƒ«ã•ã‚Œã¾ã—ãŸã€‚å…¥åŠ›å†…å®¹ã¯ä¿æŒã•ã‚Œã¦ã„ã¾ã™ã€‚");
+  if (url.searchParams.has("auth")) {
+    url.searchParams.delete("auth");
+    history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+  requestAnimationFrame(() => (draft.title ? elements.body : elements.title).focus());
+}
 
-HÂˆÛÛœİ\›H™]ÈT“
-ØØ][Û‹š™YŠNÂˆÛÛœİ˜YHZ[Ú\™Y˜Y
-\›œÙX\˜Ú\˜[\ÊNÂˆYˆ
-˜Y]H	‰ˆY[[Y[Ë]K˜[YJH[[Y[Ë]K˜[YHH˜Y]NÂˆYˆ
-˜Y˜›ÙH	‰ˆY[[Y[Ë˜›ÙK˜[YJH[[Y[Ë˜›ÙK˜[YHH˜Y˜›ÙNÂˆYˆ
-\›œÙX\˜Ú\˜[\Ë™Ù]
-˜]]ŠHOOH›ÚÈŠHÚİÕØ\İ
-‘Ú]X¸àjøàëxà¬8à©8àìøàeøào¸àeøàgÈŠNÂˆ[ÙHYˆ
-\›œÙX\˜Ú\˜[\Ë™Ù]
-˜]]ŠHOOH™[šYYŠHÙ]İ]\Ê‘Ú]X¸àëxà¬8à©8àìøàc8à«xàèøàìøà®øàêøàexà£8ào¸àeøàgøà ¹aiyb¦ùa¡yk®xàkù/çy£ xàexà£8ài¸àa8ào¸àfxà ˆŠNÂˆYˆ
-\›œÙX\˜Ú\˜[\Ëš\Ê˜]]ŠJHÂˆ\›œÙX\˜Ú\˜[\Ë™[]J˜]]ŠNÂˆ\İÜKœ™\XÙTİ]JßKˆ‹	İ\›œ]˜[Y_Iİ\›œÙX\˜ÚIİ\›š\ÚX
-NÂˆBˆ™\]Y\İ[š[X][Û‘œ˜[YJ
+async function submitIssue(event) {
+  event.preventDefault(); elements.created.hidden = true; setStatus();
+  if (!state.authenticated) {
+    setStatus("Issueã‚’ä½œæˆã™ã‚‹ã«ã¯GitHubã¸ãƒ­ã‚°ã‚¤ãƒ³ã—ã¦ãã ã•ã„ã€‚");
+    elements.authNotice.hidden = false;
+    elements.authNotice.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  const repository = normalizeRepositoryInput(elements.repository.value);
+  const title = elements.title.value.trim();
+  if (!repository) { setStatus("ç™»éŒ²å…ˆã®ãƒªãƒã‚¸ãƒˆãƒªã‚’é¸æŠã—ã¦ãã ã•ã„ã€‚"); openRepositoryDialog(); return; }
+  if (!title) { setStatus("Issueã‚¿ã‚¤ãƒˆãƒ«ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚"); elements.title.focus(); return; }
+  setBusy(true);
+  try {
+    const data = await requestJson("/api/issues", {
+      method: "POST",
+      body: JSON.stringify({
+        repository, title, body: elements.body.value,
+        labels: elements.labels.value.split(",").map((label) => label.trim()).filter(Boolean)
+      })
+    });
+    elements.createdLink.href = data.issue.url;
+    elements.createdLink.textContent = `${data.issue.repository} #${data.issue.number} ã‚’é–‹ã`;
+    elements.created.hidden = false;
+    elements.title.value = ""; elements.body.value = ""; elements.labels.value = "";
+    setSelected(repository); history.replaceState({}, "", "/");
+    showToast("Issueã‚’ä½œæˆã—ã¾ã—ãŸ"); elements.title.focus();
+  } catch (error) {
+    setStatus(error.message);
+    if (["authentication_required", "github_session_expired"].includes(error.code)) await loadSession();
+  } finally { setBusy(false); }
+}
 
-HOˆ
-˜Y]HÈ[[Y[Ë˜›ÙHˆ[[Y[Ë]JK™›Øİ\Ê
-JNÂŸB‚˜\Ş[˜È[˜İ[ÛˆİX›Z]\ÜİYJ]™[
-HÂˆ]™[œ™]™[Y˜][
+function registerEvents() {
+  elements.form.addEventListener("submit", submitIssue);
+  elements.form.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) { event.preventDefault(); elements.form.requestSubmit(); }
+  });
+  elements.repository.addEventListener("change", () => setSelected(elements.repository.value));
+  elements.manage.addEventListener("click", openRepositoryDialog);
+  elements.search.addEventListener("input", renderRepositoryList);
+  elements.reload.addEventListener("click", loadRepositories);
+  elements.addManual.addEventListener("click", addManualRepository);
+  elements.manual.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); addManualRepository(); } });
+  elements.save.addEventListener("click", () => {
+    state.favorites = uniqueRepositories([...state.draftFavorites]).sort((a, b) => a.localeCompare(b));
+    saveFavorites(); renderRepositoryOptions(); showToast(`${state.favorites.length}ä»¶ã®ç™»éŒ²å…ˆã‚’ä¿å­˜ã—ã¾ã—ãŸ`);
+  });
+  addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault(); state.installPrompt = event; elements.install.hidden = false;
+  });
+  elements.install.addEventListener("click", async () => {
+    if (!state.installPrompt) return;
+    await state.installPrompt.prompt(); state.installPrompt = null; elements.install.hidden = true;
+  });
+  addEventListener("appinstalled", () => { state.installPrompt = null; elements.install.hidden = true; showToast("EasyIssueã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¾ã—ãŸ"); });
+}
 
-NÈ[[Y[Ë˜Ü™X]YšY[ˆHYNÈÙ]İ]\Ê
-NÂˆYˆ
-\İ]K˜]][XØ]Y
-HÂˆÙ]İ]\Ê’\ÜİYxà¤¹/g9¢$8àfxà¢øàjøàkÑÚ]X¸àn8àëxà¬8à©8àìøàeøài¸àcøàh8àexàa8à ˆŠNÂˆ[[Y[Ë˜]]›İXÙKšY[ˆH˜[ÙNÂˆ[[Y[Ë˜]]›İXÙKœØÜ›Û[ÕšY]ÊÈ™Z]š[ÜˆœÛ[Ûİ‹›ØÚÎˆ˜Ù[\ˆˆJNÂˆ™]\›ÂˆBˆÛÛœİ™\ÜÚ]ÜHH›Ü›X[^™T™\ÜÚ]ÜR[œ]
-[[Y[Ëœ™\ÜÚ]ÜK˜[YJNÂˆÛÛœİ]HH[[Y[Ë]K˜[YKš[J
-NÂˆYˆ
-\™\ÜÚ]ÜJHÈÙ]İ]\Ê¹ænúc,¹ab8àk¸àê¸àçxà®8àâ8àê¸à¤º`n9¢§¸àeøài¸àcøàh8àexàa8à ˆŠNÈÜ[”™\ÜÚ]ÜQX[ÙÊ
-NÈ™]\›ÈBˆYˆ
-]]JHÈÙ]İ]\Ê’\ÜİYxà¯øà©8àâ8àêøà¤¹aiyb¦øàeøài¸àcøàh8àexàa8à ˆŠNÈ[[Y[Ë]K™›Øİ\Ê
-NÈ™]\›ÈBˆÙ]\ŞJYJNÂˆHÂˆÛÛœİ]HH]ØZ]™\]Y\İœÛÛŠ‹Ø\KÚ\ÜİY\È‹ÂˆY]Ùˆ”ÔÕ‹ˆ›ÙNˆ”ÓÓ‹œİš[™ÚYJÂˆ™\ÜÚ]ÜK]K›ÙNˆ[[Y[Ë˜›ÙK˜[YKˆX™[Îˆ[[Y[Ë›X™[Ë˜[YKœÜ]
-‹ŠK›X\
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  try { await navigator.serviceWorker.register("/sw.js", { scope: "/" }); }
+  catch (error) { console.warn("Service worker registration failed", error); }
+}
 
-X™[
-HOˆX™[š[J
-JK™š[\Š›ÛÛX[ŠBˆJBˆJNÂˆ[[Y[Ë˜Ü™X]Y[šËš™YˆH]Kš\ÜİYK\›Âˆ[[Y[Ë˜Ü™X]Y[šË^ÛÛ[H	Ù]Kš\ÜİYKœ™\ÜÚ]Ü_HÉÙ]Kš\ÜİYK›[X™\ŸH8à¤ºe¢øàcØÂˆ[[Y[Ë˜Ü™X]YšY[ˆH˜[ÙNÂˆ[[Y[Ë]K˜[YHHˆÈ[[Y[Ë˜›ÙK˜[YHHˆÈ[[Y[Ë›X™[Ë˜[YHHˆÂˆÙ]Ù[XİY
-™\ÜÚ]ÜJNÈ\İÜKœ™\XÙTİ]JßKˆ‹‹ÈŠNÂˆÚİÕØ\İ
-’\ÜİYxà¤¹/g9¢$8àeøào¸àeøàgÈŠNÈ[[Y[Ë]K™›Øİ\Ê
-NÂˆHØ]Ú
-\œ›ÜŠHÂˆÙ]İ]\Ê\œ›Ü‹›Y\ÜØYÙJNÂˆYˆ
-È˜]][XØ][Û—Ü™\]Z\™Y‹™Ú]X—ÜÙ\ÜÚ[Û—Ù^\™Y—Kš[˜ÛY\Ê\œ›Ü‹˜ÛÙJJH]ØZ]ØYÙ\ÜÚ[ÛŠ
-NÂˆHš[˜[HÈÙ]\ŞJ˜[ÙJNÈBŸB‚™[˜İ[Ûˆ™YÚ\İ\‘]™[Ê
-HÂˆ[[Y[Ë™›Ü›K˜Y]™[\İ[™\ŠœİX›Z]‹İX›Z]\ÜİYJNÂˆ[[Y[Ë™›Ü›K˜Y]™[\İ[™\ŠšÙ^YİÛˆ‹
-]™[
-HOˆÂˆYˆ
-]™[šÙ^HOOH‘[\ˆˆ	‰ˆ
-]™[›Y]RÙ^H]™[˜İ›Ù^JJHÈ]™[œ™]™[Y˜][
-
-NÈ[[Y[Ë™›Ü›Kœ™\]Y\İİX›Z]
-
-NÈBˆJNÂˆ[[Y[Ëœ™\ÜÚ]ÜK˜Y]™[\İ[™\Š˜Ú[™ÙH‹
-
-HOˆÙ]Ù[XİY
-[[Y[Ëœ™\ÜÚ]ÜK˜[YJJNÂˆ[[Y[Ë›X[˜YÙK˜Y]™[\İ[™\Š˜ÛXÚÈ‹Ü[”™\ÜÚ]ÜQX[ÙÊNÂˆ[[Y[ËœÙX\˜Ú˜Y]™[\İ[™\Šš[œ]‹™[™\”™\ÜÚ]ÜS\İ
-NÂˆ[[Y[Ëœ™[ØY˜Y]™[\İ[™\Š˜ÛXÚÈ‹ØY™\ÜÚ]ÜšY\ÊNÂˆ[[Y[Ë˜YX[X[˜Y]™[\İ[™\Š˜ÛXÚÈ‹YX[X[™\ÜÚ]ÜJNÂˆ[[Y[Ë›X[X[˜Y]™[\İ[™\ŠšÙ^YİÛˆ‹
-]™[
-HOˆÈYˆ
-]™[šÙ^HOOH‘[\ˆŠHÈ]™[œ™]™[Y˜][
-
-NÈYX[X[™\ÜÚ]ÜJ
-NÈHJNÂˆ[[Y[ËœØ]™K˜Y]™[\İ[™\Š˜ÛXÚÈ‹
-
-HOˆÂˆİ]K™˜]›Üš]\ÈH[š\]YT™\ÜÚ]ÜšY\ÊË‹‹œİ]K™˜Y˜]›Üš]\×JKœÛÜ
-
-KŠHOˆK›ØØ[PÛÛ\\™JŠJNÂˆØ]™Q˜]›Üš]\Ê
-NÈ™[™\”™\ÜÚ]ÜSÜ[ÛœÊ
-NÈÚİÕØ\İ
-	Üİ]K™˜]›Üš]\Ë›[™İy.í¸àk¹ænúc,¹ab8à¤¹/çykf8àeøào¸àeøàgØ
-NÂˆJNÂˆY]™[\İ[™\Š˜™Y›Ü™Z[œİ[›Û\‹
-]™[
-HOˆÂˆ]™[œ™]™[Y˜][
-
-NÈİ]Kš[œİ[›Û\H]™[È[[Y[Ëš[œİ[šY[ˆH˜[ÙNÂˆJNÂˆ[[Y[Ëš[œİ[˜Y]™[\İ[™\Š˜ÛXÚÈ‹\Ş[˜È
-
-HOˆÂˆYˆ
-\İ]Kš[œİ[›Û\
-H™]\›Âˆ]ØZ]İ]Kš[œİ[›Û\œ›Û\
-
-NÈİ]Kš[œİ[›Û\H[È[[Y[Ëš[œİ[šY[ˆHYNÂˆJNÂˆY]™[\İ[™\Š˜\[œİ[Y‹
-
-HOˆÈİ]Kš[œİ[›Û\H[È[[Y[Ëš[œİ[šY[ˆHYNÈÚİÕØ\İ
-‘X\ŞR\ÜİYxà¤¸à©8àìøà®xàâ8àï8àêøàeøào¸àeøàgÈŠNÈJNÂŸB‚˜\Ş[˜È[˜İ[Ûˆ™YÚ\İ\”Ù\šXÙUÛÜšÙ\Š
-HÂˆYˆ
-JœÙ\šXÙUÛÜšÙ\ˆˆ[ˆ˜]šYØ]ÜŠJH™]\›ÂˆHÈ]ØZ]˜]šYØ]Ü‹œÙ\šXÙUÛÜšÙ\‹œ™YÚ\İ\Š‹ÜİËšœÈ‹ÈØÛÜNˆ‹ÈˆJNÈBˆØ]Ú
-\œ›ÜŠHÈÛÛœÛÛKØ\›Š”Ù\šXÙHÛÜšÙ\ˆ™YÚ\İ˜][Ûˆ˜Z[Y‹\œ›ÜŠNÈBŸB‚˜\Ş[˜È[˜İ[Ûˆİ\
-
-HÂˆ™YÚ\İ\‘]™[Ê
-NÈ™[™\”™\ÜÚ]ÜSÜ[ÛœÊ
-NÈ™Yš[
-
-NÂˆ]ØZ]›ÛZ\ÙK˜[
-ÛØYÙ\ÜÚ[ÛŠ
-K™YÚ\İ\”Ù\šXÙUÛÜšÙ\Š
-WJNÂˆYˆ
-İ]K˜]][XØ]Y	‰ˆİ]K™˜]›Üš]\Ë›[™İOOH
-HÙ][Y[İ]
-Ü[”™\ÜÚ]ÜQX[ÙËL
-NÂŸB›ÚYİ\
-
-NÂ
+async function start() {
+  registerEvents(); renderRepositoryOptions(); prefill();
+  await Promise.all([loadSession(), registerServiceWorker()]);
+  if (state.authenticated && state.favorites.length === 0) setTimeout(openRepositoryDialog, 250);
+}
+void start();
