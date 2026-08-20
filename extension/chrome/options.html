@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EasyIssue Share 設定</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <main>
+    <h1>EasyIssue Share</h1>
+    <p>デプロイ済みのEasyIssue URLを設定してください。</p>
+    <form id="options-form">
+      <label>EasyIssue URL<input id="base-url" type="url" placeholder="https://easyissue.example.com" required /></label>
+      <button type="submit">保存</button>
+    </form>
+    <p id="status" role="status"></p>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

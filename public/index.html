@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#5b5bf7" />
+  <meta name="description" content="共有シートやChromeから、登録済みGitHubリポジトリへ素早くIssueを作成します。" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="EasyIssue" />
+  <title>EasyIssue</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="app-header">
+      <a class="brand" href="/" aria-label="EasyIssue ホーム">
+        <span class="brand-mark" aria-hidden="true">E</span>
+        <span><strong>EasyIssue</strong><small>思いついたら、すぐIssue</small></span>
+      </a>
+      <div id="session-area" class="session-area" aria-live="polite"><span class="session-loading">確認中…</span></div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div>
+          <p class="eyebrow">GitHub issue capture</p>
+          <h1 id="hero-title">共有した内容を、そのままIssueへ。</h1>
+          <p>Xやブラウザで見つけたものを受け取り、登録済みリポジトリを選んで送信します。</p>
+        </div>
+        <button id="install-button" class="button button-secondary" type="button" hidden>アプリとして追加</button>
+      </section>
+
+      <section id="auth-notice" class="notice" hidden>
+        <div><strong>GitHubログインが必要です</strong><p>入力内容はこの画面に残したまま、認証後に戻れます。</p></div>
+        <a id="login-link" class="button button-primary" href="/api/auth/login">GitHubでログイン</a>
+      </section>
+
+      <section class="composer-card" aria-labelledby="composer-title">
+        <div class="card-heading">
+          <div><p class="eyebrow">New issue</p><h2 id="composer-title">Issueを作成</h2></div>
+          <button id="manage-repositories" class="text-button" type="button">登録先を編集</button>
+        </div>
+        <form id="issue-form">
+          <label class="field"><span>リポジトリ</span><select id="repository" name="repository" required><option value="">登録先を選択</option></select></label>
+          <label class="field"><span>タイトル</span><input id="issue-title" name="title" maxlength="256" autocomplete="off" placeholder="何を対応するか" required /></label>
+          <label class="field"><span>本文</span><textarea id="issue-body" name="body" rows="9" maxlength="65000" placeholder="背景、期待する状態、参照URLなど"></textarea></label>
+          <label class="field"><span>ラベル <small>任意・カンマ区切り</small></span><input id="issue-labels" name="labels" autocomplete="off" placeholder="todo, feedback" /></label>
+          <div class="form-footer">
+            <p class="shortcut-hint"><kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> で送信</p>
+            <button id="submit-button" class="button button-primary button-submit" type="submit"><span>Issueを作成</span></button>
+          </div>
+        </form>
+        <div id="form-status" class="form-status" aria-live="polite"></div>
+        <div id="created-issue" class="created-issue" hidden>
+          <span aria-hidden="true">✓</span><div><strong>Issueを作成しました</strong><a id="created-issue-link" target="_blank" rel="noreferrer">GitHubで開く</a></div>
+        </div>
+      </section>
+
+      <section class="tips-card">
+        <h2>共有から使く</h2>
+        <div class="tips-grid">
+          <article><strong>Android</strong><p>PWAをインストール後、XやChromeの共有先でEasyIssueを選択します。</p></article>
+          <article><strong>iPhone / iPad</strong><p>共有シート対応のショートカットから、このアプリの共有URLを開きます。</p></article>
+          <article><strong>PC版Chrome</strong><p>同梱のChrome拡張を読み込み、右クリックまたはツールバーから送ります。</p></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="repository-dialog" class="repository-dialog">
+    <form method="dialog" class="dialog-shell">
+      <div class="dialog-heading"><div><p class="eyebrow">Repositories</p><h2>登録先を編集</h2></div><button class="icon-button" value="cancel" aria-label="閉じる">×</button></div>
+      <p class="dialog-description">よく使うリポジトリだけを登録します。この設定は端末内に保存されます。</p>
+      <div class="repository-toolbar"><input id="repository-search" type="search" placeholder="リポジトリを検索" /><button id="reload-repositories" class="button button-secondary" type="button">GitHubから取得</button></div>
+      <div id="repository-list" class="repository-list" aria-live="polite"><p class="empty-state">GitHubから取得すると、選択可能なリポジトリを表示します。</p></div>
+      <div class="manual-repository">
+        <label class="field"><span>手入力で追加</span><div class="inline-field"><input id="manual-repository" placeholder="owner/repository" autocomplete="off" /><button id="add-manual-repository" class="button button-secondary" type="button">追加</button></div></label>
+        <p id="repository-message" class="field-message" aria-live="polite"></p>
+      </div>
+      <div class="dialog-actions"><button id="save-repositories" class="button button-primary" value="default">登録内容を保存</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <noscript>EasyIssueを利用するにはJavaScriptを有効にしてください。</noscript>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
