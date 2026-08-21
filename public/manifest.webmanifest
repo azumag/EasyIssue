@@ -2,7 +2,7 @@
   "id": "/",
   "name": "EasyIssue",
   "short_name": "EasyIssue",
-  "description": "共有した内容を登録済みGitHubリポジトリへ素早くIssueとします。",
+  "description": "共有した内容を登録済みGitHubリポジトリへ素早くIssueとして送信します。",
   "lang": "ja",
   "start_url": "/",
   "scope": "/",

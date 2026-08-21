@@ -17,7 +17,7 @@ test("共有タイトル・本文・URLをIssue下書きへ変換する", () => 
 
   assert.deepEqual(draft, {
     title: "役立ちそうな記事",
-    body: "あとで実装に反映す\n\n参照元: https://example.com/posts/42",
+    body: "あとで実装に反映する\n\n参照元: https://example.com/posts/42",
     sharedUrl: "https://example.com/posts/42"
   });
 });
