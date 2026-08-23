@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "EasyIssue Share",
+  "version": "0.1.0",
+  "description": "現在のページ、リンク、選択テキストをEasyIssueへ送ります。",
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "EasyIssueでIssueを作成",
+    "default_icon": {
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "128": "icons/icon-128.png"
+  },
+  "options_page": "options.html"
+}
