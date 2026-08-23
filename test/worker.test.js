@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { parseCookies } from "../worker/cookies.js";
 import { seal, unseal } from "../worker/crypto.js";
+import { listRepositories } from "../worker/github.js";
 import { handleRequest } from "../worker/index.js";
 import { normalizeIssuePayload, normalizeReturnTo } from "../worker/validation.js";
 
@@ -168,6 +169,54 @@ test("ログイン済みセッションでGitHub Issue APIを呼び出す", asyn
       repository: "azumag/EasyIssue"
     }
   });
+});
+
+test("GitHubリポジトリ一覧を複数ページから取得し、重複を整理する", async () => {
+  const firstPage = [
+    { full_name: "azumag/EasyIssue", private: false, has_issues: true, description: "", pushed_at: "2026-08-20T00:00:00Z" },
+    ...Array.from({ length: 99 }, (_, index) => ({
+      full_name: `azumag/repository-${index}`,
+      private: false,
+      has_issues: true
+    }))
+  ];
+  const pages = [
+    firstPage,
+    [
+      { full_name: "azumag/another", private: true, has_issues: true, description: "private" },
+      { full_name: "azumag/EasyIssue", private: false, has_issues: true, description: "updated", pushed_at: "2026-08-21T00:00:00Z" }
+    ]
+  ];
+  const requests = [];
+  const fetchImpl = async (url, init) => {
+    requests.push({ url, init });
+    return new Response(JSON.stringify(pages[requests.length - 1]), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  };
+
+  const repositories = await listRepositories("github-access-token", fetchImpl);
+
+  assert.equal(repositories.length, 101);
+  assert.deepEqual(
+    repositories.find((repository) => repository.fullName === "azumag/EasyIssue"),
+    {
+      fullName: "azumag/EasyIssue",
+      private: false,
+      description: "updated",
+      pushedAt: "2026-08-21T00:00:00Z"
+    }
+  );
+  assert.deepEqual(
+    repositories.find((repository) => repository.fullName === "azumag/another"),
+    { fullName: "azumag/another", private: true, description: "private", pushedAt: null }
+  );
+  assert.equal(requests.length, 2);
+  assert.ok(requests.every(({ url }) => url.startsWith("https://api.github.com/user/repos?")));
+  assert.equal(new URL(requests[0].url).searchParams.get("page"), "1");
+  assert.equal(new URL(requests[1].url).searchParams.get("page"), "2");
+  assert.ok(requests.every(({ init }) => init.headers.Authorization === "Bearer github-access-token"));
 });
 
 test("OAuth callbackでセッションを発行し共有画面へ戻す", async () => {

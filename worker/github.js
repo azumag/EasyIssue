@@ -1,6 +1,8 @@
 import { AppError } from "./errors.js";
 
 const apiVersion = "2026-03-10";
+const REPOSITORY_PAGE_SIZE = 100;
+const MAX_REPOSITORY_PAGES = 10;
 const apiBaseUrl = "https://api.github.com";
 
 function githubHeaders(token, additional = {}) {
@@ -64,22 +66,36 @@ export async function getViewer(token, fetchImpl = fetch) {
 }
 
 export async function listRepositories(token, fetchImpl = fetch) {
-  const query = new URLSearchParams({
+  const baseQuery = {
     affiliation: "owner,collaborator,organization_member",
     direction: "desc",
-    per_page: "100",
+    per_page: String(REPOSITORY_PAGE_SIZE),
     sort: "pushed"
-  });
-  const data = await githubRequest(`/user/repos?${query}`, token, {}, fetchImpl);
-  if (!Array.isArray(data)) return [];
-  return data
-    .filter((repository) => repository?.has_issues && !repository.archived && !repository.disabled)
-    .map((repository) => ({
-      fullName: repository.full_name,
-      private: Boolean(repository.private),
-      description: repository.description ?? "",
-      pushedAt: repository.pushed_at ?? null
-    }));
+  };
+
+  const repositoriesByFullName = new Map();
+
+  for (let page = 1; page <= MAX_REPOSITORY_PAGES; page += 1) {
+    const query = new URLSearchParams({ ...baseQuery, page: String(page) });
+    const data = await githubRequest(`/user/repos?${query}`, token, {}, fetchImpl);
+    if (!Array.isArray(data)) break;
+
+    for (const repository of data) {
+      if (!repository?.has_issues || repository.archived || repository.disabled) continue;
+      if (typeof repository.full_name !== "string") continue;
+
+      repositoriesByFullName.set(repository.full_name, {
+        fullName: repository.full_name,
+        private: Boolean(repository.private),
+        description: repository.description ?? "",
+        pushedAt: repository.pushed_at ?? null
+      });
+    }
+
+    if (data.length < REPOSITORY_PAGE_SIZE) break;
+  }
+
+  return [...repositoriesByFullName.values()];
 }
 
 export async function createIssue(token, input, fetchImpl = fetch) {
